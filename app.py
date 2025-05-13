@@ -1,4 +1,7 @@
 import streamlit as st
+import requests
+from textblob import TextBlob
+
 
 st.title("Welcome to TuneTeller")
 st.subheader("TuneTeller is a music analysis system that allows you to filter you music by mood, not just genre.")
