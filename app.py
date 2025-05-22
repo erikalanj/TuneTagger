@@ -1,5 +1,6 @@
 import streamlit as st
 import sqlite3
+import pandas as pd
 
 connection = sqlite3.connect("tunes.db")
 cursor = connection.cursor()
@@ -30,7 +31,9 @@ def main():
         )
         connection.commit()
     if st.button("Show all songs!"):
-        st.write(show_database())
+        data = show_database()
+        dataframe = pd.DataFrame(data, columns=["Song Title", "Artist Name"])
+        st.table(dataframe)
         connection.commit()
 
 
