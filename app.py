@@ -29,11 +29,14 @@ def main():
             (song_title, song_artist),
         )
         connection.commit()
-        show_database()
+    if st.button("Show all songs!"):
+        st.write(show_database())
+        connection.commit()
 
 
 def show_database():
     cursor.execute("SELECT * FROM tunes")
+    return cursor.fetchall()
 
 
 if __name__ == "__main__":
