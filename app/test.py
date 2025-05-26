@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import pandas as pd
 
-connection = sqlite3.connect("tunes.db", check_same_thread=False)
+connection = sqlite3.connect("db/tunes.db", check_same_thread=False)
 cursor = connection.cursor()
 
 # initlize the database with these columns (if not already there)
@@ -22,11 +22,11 @@ class Song:
         self.title = title
         self.artist = artist
 
-    def get_data(self):
+    def get_song_data(self):
         return (self.title, self.artist)
 
 
-def show_database():
+def fetch_database():
     cursor.execute("SELECT * FROM tunes")
     return cursor.fetchall()
 
@@ -34,7 +34,7 @@ def show_database():
 def insert_song(song: Song):
     cursor.execute(
         "INSERT OR IGNORE INTO tunes (song_title, song_artist) VALUES (?, ?)",
-        song.get_data(),
+        song.get_song_data(),
     )
 
 
@@ -53,7 +53,7 @@ def index():
             # in order to not resubmit on refresh, if you redirect back to the page, it clears forms
             return redirect(url_for("index"))
 
-    data = show_database()
+    data = fetch_database()
     dataframe = pd.DataFrame(data, columns=["Song Title", "Artist Name"])
     connection.commit()
     return render_template("index.html", library_data=dataframe.to_html())
