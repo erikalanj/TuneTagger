@@ -5,3 +5,7 @@ venv/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Private info!!
+.secrets
+old stuff/

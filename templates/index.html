@@ -1,0 +1,18 @@
+{% extends 'base.html' %} {% block head %} {% endblock %} {% block body %}
+<h1>Welcome to TuneTagger!</h1>
+<h2>
+  For music fans who want to find new music, but based off of mood and not genre
+</h2>
+<div>
+  <button id="ShowLibraryButton">See your current library!</button>
+  <p id="LibraryOutput">what sup</p>
+</div>
+
+<script>
+  const myButton = document.getElementById("ShowLibraryButton");
+  const libraryData = `{{ library_data|safe }}`;
+  myButton.addEventListener("click", function () {
+    document.getElementById("LibraryOutput").innerHTML = libraryData;
+  });
+</script>
+{% endblock %}
