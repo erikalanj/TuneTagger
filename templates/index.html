@@ -1,18 +1,35 @@
-{% extends 'base.html' %} {% block head %} {% endblock %} {% block body %}
-<h1>Welcome to TuneTagger!</h1>
+{% extends 'base.html' %} {% block head %} <title>TuneTagger</title>
+{% endblock %} {% block body %}
+<h1 id="title">Welcome to TuneTagger!</h1>
 <h2>
   For music fans who want to find new music, but based off of mood and not genre
 </h2>
 <div>
-  <button id="ShowLibraryButton">See your current library!</button>
-  <p id="LibraryOutput">what sup</p>
+  <h4>Would you like to insert a song?</h4>
+  <!-- <label for="artist-to-insert" action="{}">Artist title</label>
+  <input type="text" id="artist-to-insert" action="/" />
+  <br />
+  <label for="title-to-insert">Song title</label>
+  <input type="text" id="title-to-insert" action="/" />
+  <br />
+  <button id="insert-song">Add</button>
+  <br /> -->
+  <form action="{{url_for('index')}}" method="post">
+    <label for="title-to-insert">Enter song title</label>
+    <input type="text" name="title-to-insert" id="title-to-insert" />
+    <label for="artist-to-insert">Enter artist</label>
+    <input type="text" name="artist-to-insert" id="artist-to-insert" />
+    <input type="submit" id="submit-insertion" value="Submit" />
+  </form>
+  <button id="show-library-button">See your current library!</button>
+  <p id="library-output"></p>
 </div>
 
 <script>
-  const myButton = document.getElementById("ShowLibraryButton");
+  const myButton = document.getElementById("show-library-button");
   const libraryData = `{{ library_data|safe }}`;
   myButton.addEventListener("click", function () {
-    document.getElementById("LibraryOutput").innerHTML = libraryData;
+    document.getElementById("library-output").innerHTML = libraryData;
   });
 </script>
 {% endblock %}
