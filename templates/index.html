@@ -1,35 +1,45 @@
-{% extends 'base.html' %} {% block head %} <title>TuneTagger</title>
+{% extends 'base.html' %} {% block head %}
+<title>TuneTagger</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+  rel="stylesheet"
+/>
 {% endblock %} {% block body %}
-<h1 id="title">Welcome to TuneTagger!</h1>
-<h2>
-  For music fans who want to find new music, but based off of mood and not genre
-</h2>
-<div>
-  <h4>Would you like to insert a song?</h4>
-  <!-- <label for="artist-to-insert" action="{}">Artist title</label>
-  <input type="text" id="artist-to-insert" action="/" />
-  <br />
-  <label for="title-to-insert">Song title</label>
-  <input type="text" id="title-to-insert" action="/" />
-  <br />
-  <button id="insert-song">Add</button>
-  <br /> -->
-  <form action="{{url_for('index')}}" method="post">
-    <label for="title-to-insert">Enter song title</label>
-    <input type="text" name="title-to-insert" id="title-to-insert" />
-    <label for="artist-to-insert">Enter artist</label>
-    <input type="text" name="artist-to-insert" id="artist-to-insert" />
-    <input type="submit" id="submit-insertion" value="Submit" />
-  </form>
-  <button id="show-library-button">See your current library!</button>
-  <p id="library-output"></p>
+<div class="container">
+  <h1 id="title">Welcome to TuneTagger!</h1>
+  <h2>For music fans to oraganize their library by moods, not genres</h2>
+  <div class="section">
+    <h4>Would you like to add a song to your library?</h4>
+    <form action="{{url_for('index')}}" method="post">
+      <label for="title-to-insert">Enter song title</label>
+      <input type="text" name="title-to-insert" id="title-to-insert" />
+      <label for="artist-to-insert">Enter artist</label>
+      <input type="text" name="artist-to-insert" id="artist-to-insert" />
+      <input type="submit" id="submit-insertion" value="Submit" />
+    </form>
+    <button id="show-library-button" onclick="showLibrary()">
+      See your current library!
+    </button>
+    <p id="library-output"></p>
+  </div>
 </div>
 
 <script>
-  const myButton = document.getElementById("show-library-button");
   const libraryData = `{{ library_data|safe }}`;
-  myButton.addEventListener("click", function () {
-    document.getElementById("library-output").innerHTML = libraryData;
-  });
+  function showLibrary() {
+    const libraryOutput = document.getElementById("library-output");
+    if (!libraryOutput.innerHTML.trim()) {
+      libraryOutput.innerHTML = libraryData;
+    }
+    if (
+      libraryOutput.style.display === "none" ||
+      libraryOutput.style.display === ""
+    ) {
+      libraryOutput.style.display = "block";
+    } else {
+      libraryOutput.style.display = "none";
+    }
+  }
 </script>
 {% endblock %}

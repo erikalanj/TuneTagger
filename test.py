@@ -1,18 +1,29 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import pandas as pd
 
 connection = sqlite3.connect("tunes.db", check_same_thread=False)
 cursor = connection.cursor()
 
+# initlize the database with these columns (if not already there)
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS tunes(
-               song_title TEXT NOT NULL,
-               song_artist TEXT NOT NULL
-               )"""
+           song_title TEXT NOT NULL,
+           song_artist TEXT NOT NULL,
+           UNIQUE(song_title, song_artist)
+       )"""
 )
 
 connection.commit()
+
+
+class Song:
+    def __init__(self, title, artist):
+        self.title = title
+        self.artist = artist
+
+    def get_data(self):
+        return (self.title, self.artist)
 
 
 def show_database():
@@ -20,10 +31,10 @@ def show_database():
     return cursor.fetchall()
 
 
-def insert_song(song_title, song_artist):
+def insert_song(song: Song):
     cursor.execute(
-        "INSERT INTO tunes (song_title, song_artist) VALUES (?, ?)",
-        (song_title, song_artist),
+        "INSERT OR IGNORE INTO tunes (song_title, song_artist) VALUES (?, ?)",
+        song.get_data(),
     )
 
 
@@ -33,11 +44,14 @@ app = Flask(__name__)
 @app.route("/index", methods=["POST", "GET"])
 def index():
     if request.method == "POST":
-        song_title = request.form["title-to-insert"]
-        song_artist = request.form["artist-to-insert"]
-        if song_artist and song_title:
-            insert_song(song_title, song_artist)
+        title = request.form["title-to-insert"]
+        artist = request.form["artist-to-insert"]
+        if title and artist:
+            new_song = Song(title, artist)
+            insert_song(new_song)
             connection.commit()
+            # in order to not resubmit on refresh, if you redirect back to the page, it clears forms
+            return redirect(url_for("index"))
 
     data = show_database()
     dataframe = pd.DataFrame(data, columns=["Song Title", "Artist Name"])
