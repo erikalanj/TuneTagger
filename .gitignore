@@ -7,5 +7,5 @@ __pycache__/
 .DS_Store
 
 # Private info!!
-.secrets
+secrets
 old stuff/
