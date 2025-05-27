@@ -22,12 +22,13 @@
     </h4>
 
     <div class="content">
-      <form action="{{url_for('index')}}" method="post">
+      <form action="{{url_for('index')}}" method="post" id="song-form">
         <label for="title-to-insert">Enter song title</label>
         <input type="text" name="title-to-insert" id="title-to-insert" />
         <label for="artist-to-insert">Enter artist</label>
         <input type="text" name="artist-to-insert" id="artist-to-insert" />
         <input type="submit" id="submit-insertion" value="Submit" />
+        <div id="checkmark" class="checkmark">&#10003;</div>
       </form>
     </div>
   </div>
@@ -112,6 +113,43 @@
           toggleCollapsible(content, arrow);
         });
       });
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("song-form");
+      const checkmark = document.getElementById("checkmark");
+
+      if (form) {
+        form.addEventListener("submit", function () {
+          // remember to keep the add-song section open after reload
+          sessionStorage.setItem("showCheckmark", "1");
+          sessionStorage.setItem("openSection", "add-song");
+        });
+      }
+
+      // on page load, check if we should show the checkmark and keep section open
+      if (sessionStorage.getItem("showCheckmark") === "1") {
+        sessionStorage.removeItem("showCheckmark");
+        if (checkmark) {
+          checkmark.classList.add("visible");
+          setTimeout(() => {
+            checkmark.classList.remove("visible");
+          }, 1500);
+        }
+      }
+
+      // keep the add-song section open if needed
+      if (sessionStorage.getItem("openSection") === "add-song") {
+        sessionStorage.removeItem("openSection");
+        // expand the first .content (add-song section)
+        const addSongContent = document.querySelectorAll(".content")[0];
+        const addSongArrow = document.querySelectorAll(".section .arrow")[0];
+        if (addSongContent) {
+          expandElement(addSongContent, addSongArrow);
+        }
+      }
     });
   </script>
 
