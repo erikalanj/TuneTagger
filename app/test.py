@@ -8,6 +8,7 @@ cursor = connection.cursor()
 # initlize the database with these columns (if not already there)
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS tunes(
+           
            song_title TEXT NOT NULL,
            song_artist TEXT NOT NULL,
            UNIQUE(song_title, song_artist)
@@ -28,6 +29,7 @@ class Song:
 
 def fetch_database():
     cursor.execute("SELECT * FROM tunes")
+    connection.commit()
     return cursor.fetchall()
 
 
@@ -36,6 +38,10 @@ def insert_song(song: Song):
         "INSERT OR IGNORE INTO tunes (song_title, song_artist) VALUES (?, ?)",
         song.get_song_data(),
     )
+    connection.commit()
+
+
+# def delete_song()
 
 
 app = Flask(__name__)
@@ -49,13 +55,13 @@ def index():
         if title and artist:
             new_song = Song(title, artist)
             insert_song(new_song)
-            connection.commit()
+
             # in order to not resubmit on refresh, if you redirect back to the page, it clears forms
             return redirect(url_for("index"))
 
     data = fetch_database()
     dataframe = pd.DataFrame(data, columns=["Song Title", "Artist Name"])
-    connection.commit()
+
     return render_template("index.html", library_data=dataframe.to_html())
 
 
