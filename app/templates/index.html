@@ -22,12 +22,30 @@
     </h4>
 
     <div class="content">
-      <form action="{{url_for('index')}}" method="post" id="song-form">
+      <form action="{{url_for('post_request')}}" method="post" id="song-form">
         <label for="title-to-insert">Enter song title</label>
         <input type="text" name="title-to-insert" id="title-to-insert" />
         <label for="artist-to-insert">Enter artist</label>
         <input type="text" name="artist-to-insert" id="artist-to-insert" />
-        <input type="submit" id="submit-insertion" value="Submit" />
+        <input type="submit" id="submit-insertion" value="Add song! :D" />
+        <div id="checkmark" class="checkmark">&#10003;</div>
+      </form>
+    </div>
+  </div>
+
+  <div class="section">
+    <h4>
+      Would you like to remove a song from your library?
+      <span class="arrow">▼</span>
+    </h4>
+
+    <div class="content">
+      <form action="{{url_for('post_request')}}" method="post" id="song-form">
+        <label for="id-to-delete">Enter ID</label>
+        <input type="text" name="id-to-delete" id="id-to-delete" />
+        <label for="title-to-delete">OR Enter song title</label>
+        <input type="text" name="title-to-delete" id="title-to-delete" />
+        <input type="submit" id="submit-deletion" value="Remove song >:(" />
         <div id="checkmark" class="checkmark">&#10003;</div>
       </form>
     </div>

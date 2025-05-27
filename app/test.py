@@ -8,7 +8,6 @@ cursor = connection.cursor()
 # initlize the database with these columns (if not already there)
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS tunes(
-           
            song_title TEXT NOT NULL,
            song_artist TEXT NOT NULL,
            UNIQUE(song_title, song_artist)
@@ -41,28 +40,47 @@ def insert_song(song: Song):
     connection.commit()
 
 
-# def delete_song()
+def delete_song(title, id):
+    if id and title:
+        cursor.execute(
+            "DELETE FROM tunes WHERE ROWID = ? OR song_title = ?", (id, title)
+        )
+    elif id:
+        cursor.execute("DELETE FROM tunes WHERE ROWID = ?", (id,))
+    elif title:
+        cursor.execute("DELETE FROM tunes WHERE song_title = ?", (title,))
+    else:
+        return
+    connection.commit()
 
 
 app = Flask(__name__)
 
 
-@app.route("/index", methods=["POST", "GET"])
-def index():
-    if request.method == "POST":
-        title = request.form["title-to-insert"]
-        artist = request.form["artist-to-insert"]
-        if title and artist:
-            new_song = Song(title, artist)
-            insert_song(new_song)
-
-            # in order to not resubmit on refresh, if you redirect back to the page, it clears forms
-            return redirect(url_for("index"))
-
+@app.route("/", methods=["GET"])
+def get_request():
     data = fetch_database()
     dataframe = pd.DataFrame(data, columns=["Song Title", "Artist Name"])
 
     return render_template("index.html", library_data=dataframe.to_html())
+
+
+@app.route("/post", methods=["POST"])
+def post_request():
+    title_to_insert = request.form.get("title-to-insert")
+    artist_to_insert = request.form.get("artist-to-insert")
+    if title_to_insert and artist_to_insert:
+        new_song = Song(title_to_insert, artist_to_insert)
+        insert_song(new_song)
+        # in order to not resubmit on refresh, if you redirect back to the page, it clears forms
+        return redirect(url_for("get_request"))
+    id_to_delete = request.form.get("id-to-delete")
+    title_to_delete = request.form.get("title-to-delete")
+    if id_to_delete or title_to_delete:
+        delete_song(title_to_delete, id_to_delete)
+        return redirect(url_for("get_request"))
+    # Always return a response
+    return redirect(url_for("get_request"))
 
 
 if __name__ == "__main__":
