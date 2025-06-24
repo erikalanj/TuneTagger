@@ -14,25 +14,32 @@ cursor.execute(
        )"""
 )
 
+# ADD DOCSTRINGS, THEY LEAVE COMMENTS UNDER YOUR METHODS
+
 connection.commit()
 
 
 class Song:
+    """Song class which defines each entry in the database"""
+
     def __init__(self, title, artist):
         self.title = title
         self.artist = artist
 
     def get_song_data(self):
+        """getter for song data"""
         return (self.title, self.artist)
 
 
 def fetch_database():
+    """retrieves all song objects from the database"""
     cursor.execute("SELECT * FROM tunes")
     connection.commit()
     return cursor.fetchall()
 
 
 def insert_song(song: Song):
+    """inserts a song into the tunes database"""
     cursor.execute(
         "INSERT OR IGNORE INTO tunes (song_title, song_artist) VALUES (?, ?)",
         song.get_song_data(),
@@ -41,6 +48,7 @@ def insert_song(song: Song):
 
 
 def delete_song(title, id):
+    """deletes a song by id or title from the database"""
     if id and title:
         cursor.execute(
             "DELETE FROM tunes WHERE ROWID = ? OR song_title = ?", (id, title)
@@ -65,6 +73,9 @@ def get_request():
     return render_template("index.html", library_data=dataframe.to_html())
 
 
+# DELETION BY ID IS NOT WORKING.
+
+
 @app.route("/post", methods=["POST"])
 def post_request():
     title_to_insert = request.form.get("title-to-insert")
@@ -79,7 +90,7 @@ def post_request():
     if id_to_delete or title_to_delete:
         delete_song(title_to_delete, id_to_delete)
         return redirect(url_for("get_request"))
-    # Always return a response
+    # always return a response
     return redirect(url_for("get_request"))
 
 
