@@ -6,6 +6,7 @@ parent_dir = os.path.dirname(current_file_dir)
 sys.path.append(parent_dir)
 
 from genius.test import fetch_song_details, get_genius_access_token
+from string import Template
 
 
 def main():
@@ -22,10 +23,12 @@ def main():
             + (main_desc if main_desc is not None else "No description available")
             + "\n"
         )
-        f.write("Lyric Annotations: ")
+        f.write("Lyric Annotations: \n")
+        template_lyric = Template("$lyric_fragment: $annotation_text\n")
         for i in range(len(lyric_annotations) if lyric_annotations is not None else 0):
             if lyric_annotations is not None:
-                f.write(str(lyric_annotations[i].items()))
+                formatted_lyric = template_lyric.substitute(lyric_annotations[i])
+                f.write(formatted_lyric)
 
 
 if __name__ == "__main__":
