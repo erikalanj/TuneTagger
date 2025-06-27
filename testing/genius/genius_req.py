@@ -37,7 +37,6 @@ def search_song(song_title, artist_name, access_token):
     response = requests.get(url, headers=headers)
     print("Request URL:", url)  # Debugging
     print("Response Status Code:", response.status_code)  # Debugging
-    print("Response JSON:", response.json())  # Debugging
     if response.status_code == 200:
         hits = response.json()["response"]["hits"]
         for hit in hits:
@@ -55,45 +54,10 @@ def fetch_song_details(song_title, artist_name, access_token):
             song_id, access_token
         )
 
-        # Print Main Song Description
-        print("\n--- Main Song Description ---")
-        print(main_desc)
-
-        # Print Lyric Annotations
-        print("\n--- Lyric Annotations ---")
-        if lyric_annotations:
-            for i, anno_pair in enumerate(lyric_annotations):
-                print(
-                    f"\n--- Lyric Annotation {i+1} for: '{anno_pair['lyric_fragment']}' ---"
-                )
-                print(anno_pair["annotation_text"])
-            print("\n------------------------------------")
-        else:
-            print("No specific lyric annotations found for this song.")
-
         return main_desc, lyric_annotations
     else:
         print("Song not found.")
         return None, None
-    try:
-        response = requests.get(search_url, headers=headers, params=params)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        data = response.json()
-
-        for hit in data["response"]["hits"]:
-            if hit["type"] == "song":
-                song_id = hit["result"]["id"]
-                return song_id
-        return None
-    except requests.exceptions.RequestException as e:
-        print(f"Error during song search: {e}")
-        traceback.print_exc()  # Print full traceback for debugging
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON response for search: {e}")
-        # print(f"Problematic response content: {response.text}") # Uncomment for deeper debugging
-        traceback.print_exc()  # Print full traceback for debugging
-        return None
 
 
 def extract_text_from_dom(dom_element):
@@ -204,49 +168,3 @@ def get_song_details_and_annotations(song_id, access_token):
         # print(f"Problematic response content for referents: {response.text}") # Uncomment for deeper debugging
 
     return main_description_text, lyric_annotations_list
-
-
-def main():
-    """
-    Main function to prompt user for song and artist and print descriptions and annotations.
-    """
-    access_token = get_genius_access_token()
-
-    song_title = input("Enter the song title: ")
-    artist_name = input("Enter the artist name: ")
-
-    print(f"\nSearching for '{song_title}' by '{artist_name}'...")
-    song_id = search_song(song_title, artist_name, access_token)
-
-    if song_id:
-        print(f"Found song ID: {song_id}. Fetching descriptions and annotations...")
-        main_desc, lyric_annotations = get_song_details_and_annotations(
-            song_id, access_token
-        )
-
-        # Print Main Song Description
-        print("\n--- Main Song Description ---")
-        print(main_desc)
-
-        # Print Lyric Annotations
-        print("\n--- Lyric Annotations ---")
-        if lyric_annotations:
-            for i, anno_pair in enumerate(lyric_annotations):
-                print(
-                    f"\n--- Lyric Annotation {i+1} for: '{anno_pair['lyric_fragment']}' ---"
-                )
-                print(anno_pair["annotation_text"])
-            print("\n------------------------------------")
-        else:
-            print("No specific lyric annotations found for this song.")
-            print(
-                "It's possible there are no public lyric annotations available via the API for this song."
-            )
-    else:
-        print(
-            f"Could not find '{song_title}' by '{artist_name}'. Please check the spelling."
-        )
-
-
-if __name__ == "__main__":
-    main()

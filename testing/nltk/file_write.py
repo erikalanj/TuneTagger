@@ -5,7 +5,7 @@ current_file_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_file_dir)
 sys.path.append(parent_dir)
 
-from genius.test import fetch_song_details, get_genius_access_token
+from testing.genius.genius_req import fetch_song_details, get_genius_access_token
 from string import Template
 
 
@@ -17,7 +17,7 @@ def main():
         main_desc, lyric_annotations = fetch_song_details(
             song_title, artist_name, get_genius_access_token()
         )
-
+        print("Attempted to write to file")
         f.write(
             "Main Description: "
             + (main_desc if main_desc is not None else "No description available")
