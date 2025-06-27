@@ -32,14 +32,49 @@ def get_genius_access_token():
 
 
 def search_song(song_title, artist_name, access_token):
-    """
-    Searches for a song on Genius and returns the first hit's ID.
-    """
-    base_url = "https://api.genius.com"
-    search_url = f"{base_url}/search"
+    url = f"https://api.genius.com/search?q={song_title} {artist_name}"
     headers = {"Authorization": f"Bearer {access_token}"}
-    params = {"q": f"{song_title} {artist_name}"}
+    response = requests.get(url, headers=headers)
+    print("Request URL:", url)  # Debugging
+    print("Response Status Code:", response.status_code)  # Debugging
+    print("Response JSON:", response.json())  # Debugging
+    if response.status_code == 200:
+        hits = response.json()["response"]["hits"]
+        for hit in hits:
+            if artist_name.lower() in hit["result"]["primary_artist"]["name"].lower():
+                return hit["result"]["id"]
+    return None
 
+
+def fetch_song_details(song_title, artist_name, access_token):
+    song_id = search_song(song_title, artist_name, access_token)
+
+    if song_id:
+        print(f"Found song ID: {song_id}. Fetching descriptions and annotations...")
+        main_desc, lyric_annotations = get_song_details_and_annotations(
+            song_id, access_token
+        )
+
+        # Print Main Song Description
+        print("\n--- Main Song Description ---")
+        print(main_desc)
+
+        # Print Lyric Annotations
+        print("\n--- Lyric Annotations ---")
+        if lyric_annotations:
+            for i, anno_pair in enumerate(lyric_annotations):
+                print(
+                    f"\n--- Lyric Annotation {i+1} for: '{anno_pair['lyric_fragment']}' ---"
+                )
+                print(anno_pair["annotation_text"])
+            print("\n------------------------------------")
+        else:
+            print("No specific lyric annotations found for this song.")
+
+        return main_desc, lyric_annotations
+    else:
+        print("Song not found.")
+        return None, None
     try:
         response = requests.get(search_url, headers=headers, params=params)
         response.raise_for_status()  # Raise an exception for bad status codes
