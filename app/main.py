@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+from testing.genius.genius_req import fetch_song_details, get_genius_access_token
 import sqlite3
 import pandas as pd
 
@@ -10,6 +11,7 @@ cursor.execute(
     """CREATE TABLE IF NOT EXISTS tunes(
            song_title TEXT NOT NULL,
            song_artist TEXT NOT NULL,
+           song_moof TEXT
            UNIQUE(song_title, song_artist)
        )"""
 )
@@ -52,18 +54,13 @@ def delete_song(title=None, id=None):
     if id is None and title is None:
         return
     if id is not None and title is not None:
-        cursor.execute(
-            "DELETE FROM tunes WHERE ROWID = ? AND title = ?",
-            (id, title)
-        )
+        cursor.execute("DELETE FROM tunes WHERE ROWID = ? AND title = ?", (id, title))
     elif id is not None:
         cursor.execute("DELETE FROM tunes WHERE ROWID = ?", (id,))
     elif title is not None:
-        cursor.execute(
-            "DELETE FROM tunes WHERE song_title = ?",
-            (title,)
-        )
+        cursor.execute("DELETE FROM tunes WHERE song_title = ?", (title,))
     connection.commit()
+
 
 app = Flask(__name__)
 

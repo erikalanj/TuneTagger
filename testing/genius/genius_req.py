@@ -4,9 +4,19 @@
 
 
 import requests
+import sys
 import os
 import json
 import traceback  # Import traceback for detailed error logging
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+
+sys.path.append(parent_dir)
+
+from nlp.mood_analyzer import analyze_song_mood
+
 
 # --- Configuration ---
 # It's highly recommended to use environment variables for tokens in a real app.
@@ -54,10 +64,18 @@ def fetch_song_details(song_title, artist_name, access_token):
             song_id, access_token
         )
 
-        return main_desc, lyric_annotations
+        # --- New: Analyze the mood ---
+        if main_desc or lyric_annotations:
+            mood = analyze_song_mood(main_desc, lyric_annotations)
+            print(f"Determined mood: {mood}")
+        else:
+            mood = "Undetermined"
+
+        # Now return the mood along with the other data
+        return main_desc, lyric_annotations, mood
     else:
         print("Song not found.")
-        return None, None
+        return None, None, "Undetermined"
 
 
 def extract_text_from_dom(dom_element):
@@ -180,9 +198,13 @@ if __name__ == "__main__":
     artist_name = input()
     access_token = get_genius_access_token()
 
-    desc, annotations = fetch_song_details(song_title, artist_name, access_token)
+    # Update the call to get the new 'mood' return value
+    desc, annotations, mood = fetch_song_details(song_title, artist_name, access_token)
 
-    print("Description:\n", desc)
+    print("\nDescription:\n", desc)
     print("\nLyric Annotations:")
     for ann in annotations:  # type: ignore
         print(f'Lyric: {ann["lyric_fragment"]}\nAnnotation: {ann["annotation_text"]}\n')
+
+    # Display the final mood
+    print(f"Song Mood: {mood}")
