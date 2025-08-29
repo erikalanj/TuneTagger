@@ -64,7 +64,6 @@ def fetch_song_details(song_title, artist_name, access_token):
             song_id, access_token
         )
 
-        # --- New: Analyze the mood ---
         if main_desc or lyric_annotations:
             mood = analyze_song_mood(main_desc, lyric_annotations)
             print(f"Determined mood: {mood}")
