@@ -34,33 +34,47 @@
   </div>
 
   <div class="section">
-    <h4>
-      Would you like to remove a song from your library?
-      <span class="arrow">▼</span>
-    </h4>
-
-    <div class="content">
-      <form action="{{url_for('post_request')}}" method="post" id="song-form">
-        <label for="id-to-delete">Enter ID</label>
-        <input type="text" name="id-to-delete" id="id-to-delete" />
-        <label for="title-to-delete">OR Enter song title</label>
-        <input type="text" name="title-to-delete" id="title-to-delete" />
-        <input type="submit" id="submit-deletion" value="Remove song >:(" />
-        <div id="checkmark" class="checkmark">&#10003;</div>
-      </form>
-    </div>
-  </div>
-
-  <div class="section">
     <h4>See your current library! <span class="arrow">▼</span></h4>
 
     <div class="content">
-      <div id="library-output" class="library-table"></div>
+      <div id="library-output" class="library-table">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Song Title</th>
+              <th>Artist Name</th>
+              <th>Mood</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, row in library_data.iterrows() %}
+            <tr>
+              <td>{{ row['#'] }}</td>
+              <td>{{ row['Song Title'] }}</td>
+              <td>{{ row['Artist Name'] }}</td>
+              <td>{{ row['Mood'] }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('post_request') }}">
+                  <input
+                    type="hidden"
+                    name="id-to-delete"
+                    value="{{ row['ID'] }}"
+                  />
+                  <button type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script>
-    const libraryData = `{{ library_data|safe }}`;
+    const libraryData = document.querySelector("#library-output").innerHTML;
 
     function toggleCollapsible(contentDiv, arrowElement = null) {
       if (!contentDiv) return;
@@ -68,15 +82,6 @@
       const isActive = contentDiv.classList.contains("active");
       contentDiv.style.transition =
         "max-height 0.5s ease, opacity 0.5s ease, padding 0.5s ease";
-
-      // populate the table before expanding
-      const libraryOutput = contentDiv.querySelector("#library-output");
-      if (libraryOutput && !libraryOutput.innerHTML.trim() && !isActive) {
-        libraryOutput.innerHTML = libraryData;
-        // wait for DOM to update before expanding
-        setTimeout(() => expandElement(contentDiv, arrowElement), 30);
-        return;
-      }
 
       if (!isActive) {
         expandElement(contentDiv, arrowElement);
@@ -141,13 +146,11 @@
 
       if (form) {
         form.addEventListener("submit", function () {
-          // remember to keep the add-song section open after reload
           sessionStorage.setItem("showCheckmark", "1");
           sessionStorage.setItem("openSection", "add-song");
         });
       }
 
-      // on page load, check if we should show the checkmark and keep section open
       if (sessionStorage.getItem("showCheckmark") === "1") {
         sessionStorage.removeItem("showCheckmark");
         if (checkmark) {
@@ -158,10 +161,8 @@
         }
       }
 
-      // keep the add-song section open if needed
       if (sessionStorage.getItem("openSection") === "add-song") {
         sessionStorage.removeItem("openSection");
-        // expand the first .content (add-song section)
         const addSongContent = document.querySelectorAll(".content")[0];
         const addSongArrow = document.querySelectorAll(".section .arrow")[0];
         if (addSongContent) {
