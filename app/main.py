@@ -10,7 +10,7 @@ sys.path.append(parent_dir)
 
 from testing.genius.genius_req import fetch_song_details, get_genius_access_token
 
-connection = sqlite3.connect("db/tunes.db", check_same_thread=False)
+connection = sqlite3.connect(":memory:", check_same_thread=False)
 cursor = connection.cursor()
 
 # initlize the database with these columns (if not already there)
