@@ -6,27 +6,41 @@ analyzer = SentimentIntensityAnalyzer()
 
 def get_mood_from_text(text: str) -> str:
     """
-    Analyzes the sentiment of a given text and returns a corresponding mood.
-
-    Args:
-        text (str): The combined string of song lyrics, descriptions, and annotations.
-
-    Returns:
-        str: A string representing the mood (e.g., 'Uplifting', 'Somber', 'Neutral').
+    Analyzes the sentiment of a given text and returns a corresponding mood
+    using a more sophisticated rule-based system.
     """
-    # Use VADER to get the sentiment scores for the text
     sentiment_scores = analyzer.polarity_scores(text)
 
-    # The compound score is the most useful for overall sentiment
     compound_score = sentiment_scores["compound"]
+    pos_score = sentiment_scores["pos"]
+    neg_score = sentiment_scores["neg"]
+    neu_score = sentiment_scores["neu"]
 
-    # Map the compound score to a specific mood
-    if compound_score >= 0.2:
+    print(f"the compound score of the song is {compound_score}")
+
+    # This is a good starting point for your logic, adjust these thresholds
+    if compound_score >= 1.5:
+        return "Exhilarating"
+    elif compound_score >= 0.8:
+        return "Joyful"
+    elif compound_score >= 0.5:
         return "Uplifting"
     elif compound_score > -0.2 and compound_score < 0.2:
-        return "Neutral"
-    else:
+        # Use a combination of pos/neg scores and compound score for nuance
+        if pos_score > 0.4 and neg_score < 0.1:
+            return "Calm"
+        elif neg_score > 0.4 and pos_score < 0.1:
+            return "Pensive"
+        else:
+            return "Neutral"
+    elif compound_score <= -1.0:
+        return "Aggressive"
+    elif compound_score <= -0.65:
         return "Somber"
+    elif compound_score < -0.4:
+        return "Melancholic"
+
+    return "Undetermined"
 
 
 def analyze_song_mood(description: str, annotations: list[dict]) -> str:

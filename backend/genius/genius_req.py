@@ -17,11 +17,6 @@ sys.path.append(parent_dir)
 
 from nlp.mood_analyzer import analyze_song_mood
 
-
-# --- Configuration ---
-# It's highly recommended to use environment variables for tokens in a real app.
-# For demonstration, we are using a hardcoded token.
-# client_access_token = os.getenv("GENIUS_ACCESS_TOKEN")
 client_access_token = "aa4ZOA-5Fm6597GmdwfLLgBfePglT6pEk1-U-NThxM0GGw45h_t531LB7IiPH7pD"
 
 # Ensure the token is set, even if hardcoded for testing
