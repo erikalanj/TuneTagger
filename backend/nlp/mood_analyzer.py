@@ -18,7 +18,6 @@ def get_mood_from_text(text: str) -> str:
 
     print(f"the compound score of the song is {compound_score}")
 
-    # This is a good starting point for your logic, adjust these thresholds
     if compound_score >= 1.5:
         return "Exhilarating"
     elif compound_score >= 0.8:
@@ -26,7 +25,7 @@ def get_mood_from_text(text: str) -> str:
     elif compound_score >= 0.5:
         return "Uplifting"
     elif compound_score > -0.2 and compound_score < 0.2:
-        # Use a combination of pos/neg scores and compound score for nuance
+        # combination of pos/neg scores and compound score for nuance
         if pos_score > 0.4 and neg_score < 0.1:
             return "Calm"
         elif neg_score > 0.4 and pos_score < 0.1:
@@ -54,7 +53,7 @@ def analyze_song_mood(description: str, annotations: list[dict]) -> str:
     Returns:
         str: The determined mood of the song.
     """
-    # Combine all text data into a single string for analysis
+    # all text data combined into a single string for analysis
     full_text = description
     for annotation in annotations:
         full_text += " " + annotation.get("lyric_fragment", "")
