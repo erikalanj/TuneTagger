@@ -41,10 +41,15 @@ class Song:
         return (self.title, self.artist, self.mood)
 
 
-def fetch_database():
-    """Retrieves all song objects from the database, including their ID."""
+def fetch_database(sort_by_mood=False):
+    """Retrieves all song objects from the database, including their ID.
+    Optionally sorts by mood.
+    """
     # Updated: Select the 'id' column.
-    cursor.execute("SELECT id, song_title, song_artist, song_mood FROM tunes")
+    query = "SELECT id, song_title, song_artist, song_MOOD FROM tunes"
+    if sort_by_mood:
+        query += "ORDER BY song_mood ASC"
+    cursor.execute(query)
     connection.commit()
     return cursor.fetchall()
 
@@ -71,6 +76,8 @@ def delete_song(id=None):
             # This handles cases where the form data isn't a valid integer
             pass
 
+
+POSSIBLE_MOODS = []
 
 app = Flask(__name__)
 
