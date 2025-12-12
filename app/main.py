@@ -156,11 +156,13 @@ def api_add_song():
     if mood and mood != "Undetermined":
         new_song = Song(title, artist, mood)
         insert_song(new_song)
+        library_data = format_songs_for_json()
         return jsonify(
             {
                 "success": True,
                 "song": {"title": title, "artist": artist, "mood": mood},
-                "library": format_songs_for_json(),
+                "library": library_data["songs"],
+                "availableMoods": library_data["availableMoods"],
             }
         )
     else:
@@ -181,24 +183,53 @@ def api_delete_song():
         return jsonify({"success": False, "error": "Song ID is required"}), 400
 
     delete_song(song_id)
-    return jsonify({"success": True, "library": format_songs_for_json()})
+    library_data = format_songs_for_json()
+    return jsonify(
+        {
+            "success": True,
+            "library": library_data["songs"],
+            "availableMoods": library_data["availableMoods"],
+        }
+    )
 
 
-def format_songs_for_json():
+@app.route("/api/filter-songs", methods=["GET"])
+def api_filter_songs():
+    """AJAX endpoint for filtering songs by mood"""
+    filter_moods = request.args.getlist("filter_moods")
+    filter_moods = [m for m in filter_moods if m]  # Remove empty strings
+
+    library_data = format_songs_for_json(filter_moods if filter_moods else None)
+    return jsonify(
+        {
+            "success": True,
+            "library": library_data["songs"],
+            "availableMoods": library_data["availableMoods"],
+            "selectedMoods": filter_moods,
+        }
+    )
+
+
+def format_songs_for_json(filter_moods=None):
     """Formats song data as a list of dicts for JSON/AJAX responses"""
     data = query_all_songs()
+    available_moods = get_available_moods()
     library = []
-    for idx, row in enumerate(data, 1):
-        library.append(
-            {
-                "num": idx,
-                "id": row[0],
-                "title": row[1],
-                "artist": row[2],
-                "mood": row[3],
-            }
-        )
-    return library
+    idx = 1
+    for row in data:
+        song = {
+            "id": row[0],
+            "title": row[1],
+            "artist": row[2],
+            "mood": row[3],
+        }
+        # Apply filter if specified
+        if filter_moods and song["mood"] not in filter_moods:
+            continue
+        song["num"] = idx
+        library.append(song)
+        idx += 1
+    return {"songs": library, "availableMoods": available_moods}
 
 
 if __name__ == "__main__":

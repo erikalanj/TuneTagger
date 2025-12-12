@@ -169,6 +169,21 @@
   </script>
 
   <script>
+    // Function to update the mood filter dropdown
+    function updateMoodFilter(availableMoods, selectedMoods = []) {
+      const moodSelect = document.getElementById("mood_select");
+      if (!moodSelect) return;
+
+      moodSelect.innerHTML = availableMoods
+        .map(
+          (mood) =>
+            `<option value="${mood}" ${
+              selectedMoods.includes(mood) ? "selected" : ""
+            }>${mood}</option>`
+        )
+        .join("");
+    }
+
     // Function to update the library table with new data
     function updateLibraryTable(libraryData) {
       const tbody = document.querySelector("#library-output table tbody");
@@ -225,6 +240,10 @@
 
               if (data.success) {
                 updateLibraryTable(data.library);
+                // Update the mood filter dropdown
+                if (data.availableMoods) {
+                  updateMoodFilter(data.availableMoods);
+                }
               } else {
                 alert(data.error || "Failed to delete song");
                 button.textContent = originalText;
@@ -267,6 +286,11 @@
               // Update the library table
               updateLibraryTable(data.library);
 
+              // Update the mood filter dropdown
+              if (data.availableMoods) {
+                updateMoodFilter(data.availableMoods);
+              }
+
               // Show checkmark
               if (checkmark) {
                 checkmark.classList.add("visible");
@@ -293,15 +317,45 @@
       // Attach delete handlers to existing forms
       attachDeleteHandlers();
 
-      // Restore library open state
-      if (sessionStorage.getItem("openLibrary") === "1") {
-        const libraryContent = document.querySelectorAll(".content")[1];
-        const libraryArrow = document.querySelectorAll(".section .arrow")[1];
-        if (libraryContent) {
-          expandElement(libraryContent, libraryArrow);
-        }
+      // Handle mood filter form via AJAX
+      const filterForm = document.getElementById("mood-filter-form");
+      if (filterForm) {
+        filterForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const selectedMoods = Array.from(
+            document.getElementById("mood_select").selectedOptions
+          ).map((opt) => opt.value);
+
+          const params = new URLSearchParams();
+          selectedMoods.forEach((mood) => params.append("filter_moods", mood));
+
+          const filterBtn = document.getElementById("filter-apply");
+          const originalText = filterBtn.textContent;
+          filterBtn.textContent = "Filtering...";
+          filterBtn.disabled = true;
+
+          try {
+            const response = await fetch(
+              `/api/filter-songs?${params.toString()}`
+            );
+            const data = await response.json();
+
+            if (data.success) {
+              updateLibraryTable(data.library);
+            } else {
+              alert(data.error || "Failed to filter songs");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while filtering");
+          } finally {
+            filterBtn.textContent = originalText;
+            filterBtn.disabled = false;
+          }
+        });
       }
 
+      // Restore library open state
       if (sessionStorage.getItem("openLibrary") === "1") {
         const libraryContent = document.querySelectorAll(".content")[1];
         const libraryArrow = document.querySelectorAll(".section .arrow")[1];
