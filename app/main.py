@@ -10,11 +10,23 @@ sys.path.append(parent_dir)
 
 from backend.genius.genius_req import fetch_song_details, get_genius_access_token
 
+MOOD_ORDER = [
+    "Exhilarating",
+    "Joyful",
+    "Uplifting",
+    "Calm",
+    "Neutral",
+    "Pensive",
+    "Melancholic",
+    "Somber",
+    "Aggressive",
+    "Undetermined",
+]
+
 connection = sqlite3.connect("db/tunes.db", check_same_thread=False)
 
 cursor = connection.cursor()
 
-# Updated: Added a primary key 'id' column to the table.
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS tunes(
            id INTEGER PRIMARY KEY,
@@ -41,11 +53,17 @@ class Song:
         return (self.title, self.artist, self.mood)
 
 
+def get_available_moods():
+    """Retrieves unique, non-null mood names in database"""
+    cursor.execute("SELECT DISTINCT song_mood FROM tunes WHERE song_mood IS NOT NULL")
+    all_moods = [row[0] for row in cursor.fetchall()]
+    return all_moods
+
+
 def fetch_database(sort_by_mood=False):
     """Retrieves all song objects from the database, including their ID.
     Optionally sorts by mood.
     """
-    # Updated: Select the 'id' column.
     query = "SELECT id, song_title, song_artist, song_MOOD FROM tunes"
     if sort_by_mood:
         query += "ORDER BY song_mood ASC"
@@ -56,7 +74,6 @@ def fetch_database(sort_by_mood=False):
 
 def insert_song(song: Song):
     """inserts a song into the tunes database"""
-    # Updated: Let the 'id' column autoincrement by not including it in the insert statement.
     cursor.execute(
         "INSERT OR IGNORE INTO tunes (song_title, song_artist, song_mood) VALUES (?, ?, ?)",
         song.get_song_data(),
@@ -67,31 +84,42 @@ def insert_song(song: Song):
 def delete_song(id=None):
     """Deletes a song by id from the database"""
     if id is not None:
-        # Fixed: Cast the ID to an integer for the database query.
         try:
             int_id = int(id)
             cursor.execute("DELETE FROM tunes WHERE id = ?", (int_id,))
             connection.commit()
-        except (ValueError, TypeError):
-            # This handles cases where the form data isn't a valid integer
+        except (ValueError, TypeError):  # handles where input is not valid integer
             pass
 
-
-POSSIBLE_MOODS = []
 
 app = Flask(__name__)
 
 
 @app.route("/", methods=["GET"])
 def get_request():
-    data = fetch_database()
-    # Updated: Include 'ID' in the DataFrame columns to match the database query.
+    sort_mood = (
+        request.args.get("sort") == "mood"
+    )  # check if sort paramater is in query
+
+    selected_moods = request.args.getlist("filter_moods")
+    selected_moods = [m for m in selected_moods if m]
+
+    data = fetch_database(sort_by_mood=sort_mood)
+    available_moods = get_available_moods()
     dataframe = pd.DataFrame(data, columns=["ID", "Song Title", "Artist Name", "Mood"])
+
+    if selected_moods:
+        dataframe = dataframe[dataframe["Mood"].isin(selected_moods)]
 
     dataframe.insert(0, "#", range(1, 1 + len(dataframe)))
 
-    # Pass the entire DataFrame to the template, not just the HTML.
-    return render_template("index.html", library_data=dataframe)
+    return render_template(
+        "index.html",
+        library_data=dataframe,
+        is_sorted_by_mood=sort_mood,
+        available_moods=available_moods,
+        selected_moods=selected_moods,
+    )
 
 
 @app.route("/post", methods=["POST"])
@@ -110,7 +138,6 @@ def post_request():
 
     id_to_delete = request.form.get("id-to-delete")
     if id_to_delete:
-        # The delete_song function now handles the integer casting.
         delete_song(id_to_delete)
         return redirect(url_for("get_request"))
 

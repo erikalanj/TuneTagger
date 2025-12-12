@@ -1,15 +1,4 @@
-{% extends 'base.html' %} {% block head %}
-<title>TuneTagger</title>
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/index.css') }}"
-/>
-<link
-  href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
-  rel="stylesheet"
-/>
-{% endblock %} {% block body %}
-
+{% extends 'base.html' %} {% block body %}
 <div class="container">
   <h1 id="title">Welcome to TuneTagger!</h1>
 
@@ -37,6 +26,36 @@
     <h4>See your current library! <span class="arrow">▼</span></h4>
 
     <div class="content">
+      <div class="filter-controls">
+        <form
+          action="{{ url_for('get_request')}}"
+          method="GET"
+          id="mood-filter-form"
+        >
+          <label for="mood=select"
+            >Filter by Moods (Ctrl/Cmd Click to select multiple):</label
+          >
+
+          <select name="filter_moods" id="mood_select" multiple>
+            {% for mood in available_moods %}
+            <option
+              value="{{ mood }}"
+              {%
+              if
+              mood
+              in
+              selected_moods%}selected{%
+              endif
+              %}
+            >
+              {{ mood }}
+            </option>
+            {% endfor %}
+          </select>
+
+          <button type="submit" id="filter-apply">Apply filter</button>
+        </form>
+      </div>
       <div id="library-output" class="library-table">
         <table>
           <thead>
@@ -133,7 +152,17 @@
           const section = header.closest(".section");
           const content = section.querySelector(".content");
           const arrow = header.querySelector(".arrow");
-          toggleCollapsible(content, arrow);
+          if (section.querySelector("#library-output")) {
+            const wasOpen = content.classList.contains("active");
+            toggleCollapsible(content, arrow);
+            if (wasOpen) {
+              sessionStorage.setItem("openLibrary", "0");
+            } else {
+              sessionStorage.setItem("openLibrary", "1");
+            }
+          } else {
+            toggleCollapsible(content, arrow);
+          }
         });
       });
     });
@@ -167,6 +196,14 @@
         const addSongArrow = document.querySelectorAll(".section .arrow")[0];
         if (addSongContent) {
           expandElement(addSongContent, addSongArrow);
+        }
+      }
+
+      if (sessionStorage.getItem("openLibrary") === "1") {
+        const libraryContent = document.querySelectorAll(".content")[1];
+        const libraryArrow = document.querySelectorAll(".section .arrow")[1];
+        if (libraryContent) {
+          expandElement(libraryContent, libraryArrow);
         }
       }
     });

@@ -7,7 +7,9 @@ import requests
 import sys
 import os
 import json
-import traceback  # Import traceback for detailed error logging
+import traceback
+import tomllib
+from pathlib import Path
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,9 +19,12 @@ sys.path.append(parent_dir)
 
 from nlp.mood_analyzer import analyze_song_mood
 
-client_access_token = "aa4ZOA-5Fm6597GmdwfLLgBfePglT6pEk1-U-NThxM0GGw45h_t531LB7IiPH7pD"
+secrets_path = Path(__file__).parent.parent.parent / "secrets" / "secrets.toml"
+with open(secrets_path, "rb") as f:
+    secrets = tomllib.load(f)
 
-# Ensure the token is set, even if hardcoded for testing
+client_access_token = secrets["GENIUS_TOKEN"]
+
 if not client_access_token:
     print(
         "Error: GENIUS_ACCESS_TOKEN environment variable not set, and no hardcoded token found."
@@ -40,8 +45,8 @@ def search_song(song_title, artist_name, access_token):
     url = f"https://api.genius.com/search?q={song_title} {artist_name}"
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
-    print("Request URL:", url)  # Debugging
-    print("Response Status Code:", response.status_code)  # Debugging
+    print("Request URL:", url)  # debugging
+    print("Response Status Code:", response.status_code)  # debugging
     if response.status_code == 200:
         hits = response.json()["response"]["hits"]
         for hit in hits:
@@ -65,7 +70,6 @@ def fetch_song_details(song_title, artist_name, access_token):
         else:
             mood = "Undetermined"
 
-        # Now return the mood along with the other data
         return main_desc, lyric_annotations, mood
     else:
         print("Song not found.")
@@ -82,13 +86,13 @@ def extract_text_from_dom(dom_element):
     if isinstance(dom_element, dict):
         if (
             "plain" in dom_element and dom_element["plain"]
-        ):  # Prefer 'plain' if available
+        ):  # prefer 'plain' if available
             text_content.append(dom_element["plain"])
         elif "children" in dom_element:
             for child in dom_element["children"]:
                 text_content.append(extract_text_from_dom(child))
         elif dom_element.get("tag") == "br":
-            text_content.append("\n")  # Handle line breaks
+            text_content.append("\n")  # handle line breaks
     elif isinstance(dom_element, str):
         text_content.append(dom_element)
 
@@ -106,7 +110,7 @@ def get_song_details_and_annotations(song_id, access_token):
     main_description_text = "No detailed song description available."
     lyric_annotations_list = []
 
-    # --- 1. Fetch Main Song Description (from /songs endpoint) ---
+    # fetch main song description
     song_url = f"{base_url}/songs/{song_id}"
     try:
         response = requests.get(song_url, headers=headers)
@@ -126,18 +130,18 @@ def get_song_details_and_annotations(song_id, access_token):
                 and "plain" in song_data["description"]
                 and song_data["description"]["plain"]
             ):
-                # Fallback to plain if available, though extract_text_from_dom should cover this
+                # fallback to plain if available, though extract_text_from_dom should cover this
                 main_description_text = song_data["description"]["plain"].strip()
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching main song description from /songs endpoint: {e}")
-        traceback.print_exc()  # Print full traceback for debugging
+        traceback.print_exc()
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON response for main description: {e}")
-        traceback.print_exc()  # Print full traceback for debugging
-        # print(f"Problematic response content for song details: {response.text}") # Uncomment for deeper debugging
+        traceback.print_exc()
+        # print(f"Problematic response content for song details: {response.text}") # uncomment for deeper debugging
 
-    # --- 2. Fetch Lyric Annotations (from /referents endpoint) ---
+    # fetch lyric annotations
     referents_url = f"{base_url}/referents"
     referents_params = {"song_id": song_id}
 
@@ -146,12 +150,10 @@ def get_song_details_and_annotations(song_id, access_token):
         response.raise_for_status()
         data = response.json()
 
-        # print(json.dumps(data, indent=2)) # Uncomment this to inspect referents response!
+        # print(json.dumps(data, indent=2)) # uncomment this to inspect referents response!
 
         if "response" in data and "referents" in data["response"]:
             for referent in data["response"]["referents"]:
-                # A referent can be a lyric line that has an annotation
-                # The annotation body is usually within the 'annotations' list inside the referent.
                 if "annotations" in referent:
                     for annotation in referent["annotations"]:
                         if "body" in annotation and "dom" in annotation["body"]:
@@ -159,11 +161,11 @@ def get_song_details_and_annotations(song_id, access_token):
                                 annotation["body"]["dom"]
                             ).strip()
 
-                            # Also try to get the fragment (the lyric text itself) that the annotation refers to
+                            # tryt to get the lyrics fragment that the annotation is referring to
                             fragment = referent.get("fragment", "N/A").strip()
 
                             if lyric_annotation_text:
-                                # Store as a dictionary to keep lyric fragment and annotation text together
+                                # store as dictionary to keep fragment and annotation paired
                                 lyric_annotations_list.append(
                                     {
                                         "lyric_fragment": fragment,
@@ -173,13 +175,14 @@ def get_song_details_and_annotations(song_id, access_token):
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching lyric annotations from /referents endpoint: {e}")
-        traceback.print_exc()  # Print full traceback for debugging
+        traceback.print_exc()
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON response for lyric annotations: {e}")
-        traceback.print_exc()  # Print full traceback for debugging
-        print(
-            f"Problematic response content for referents: {response.text}"
-        )  # Uncomment for deeper debugging
+        traceback.print_exc()
+        # uncomment for deeper debugging
+        # print(
+        #     f"Problematic response content for referents: {response.text}"
+        # )
 
     return main_description_text, lyric_annotations_list
 
@@ -192,7 +195,7 @@ if __name__ == "__main__":
     artist_name = input()
     access_token = get_genius_access_token()
 
-    # Update the call to get the new 'mood' return value
+    # update the call to get the new 'mood' return value
     desc, annotations, mood = fetch_song_details(song_title, artist_name, access_token)
 
     print("\nDescription:\n", desc)
@@ -200,5 +203,5 @@ if __name__ == "__main__":
     for ann in annotations:  # type: ignore
         print(f'Lyric: {ann["lyric_fragment"]}\nAnnotation: {ann["annotation_text"]}\n')
 
-    # Display the final mood
+    # display the final mood
     print(f"Song Mood: {mood}")

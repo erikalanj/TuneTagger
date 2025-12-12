@@ -250,3 +250,85 @@ a:hover {
   opacity: 1;
   transform: scale(1.2);
 }
+
+/* Filter controls styling */
+.filter-controls {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#mood-filter-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  width: auto;
+  max-width: none;
+  margin: 0;
+}
+
+#mood-filter-form label {
+  width: auto;
+  white-space: nowrap;
+  font-size: 16px;
+  text-align: left;
+}
+
+#mood_select {
+  min-width: 180px;
+  max-width: 250px;
+  height: auto;
+  min-height: 80px;
+  padding: 10px;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+}
+
+#mood_select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.3);
+  border-color: #ff8c00;
+}
+
+#mood_select option {
+  padding: 8px;
+  font-family: "Outfit", sans-serif;
+}
+
+#mood_select option:checked {
+  background: linear-gradient(0deg, #ff8c00 0%, #ffa500 100%);
+  color: white;
+}
+
+#filter-apply {
+  padding: 10px 25px;
+  font-size: 16px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .filter-controls {
+    justify-content: center;
+  }
+
+  #mood-filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #mood-filter-form label {
+    text-align: center;
+  }
+
+  #mood_select {
+    max-width: 100%;
+  }
+}
