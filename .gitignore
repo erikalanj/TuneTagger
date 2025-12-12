@@ -1,11 +1,7 @@
-# Ignore virtual environment
 venv/
-
-# Ignore any OS-specific files
 __pycache__/
 *.pyc
 .DS_Store
-
-# Private info!!
 secrets
 old stuff/
+testing
