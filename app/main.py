@@ -100,15 +100,25 @@ def get_request():
     sort_mood = (
         request.args.get("sort") == "mood"
     )  # check if sort paramater is in query
+
+    selected_moods = request.args.getlist("filter_moods")
+    selected_moods = [m for m in selected_moods if m]
+
     data = fetch_database(sort_by_mood=sort_mood)
     available_moods = get_available_moods()
     dataframe = pd.DataFrame(data, columns=["ID", "Song Title", "Artist Name", "Mood"])
 
+    if selected_moods:
+        dataframe = dataframe[dataframe["Mood"].isin(selected_moods)]
+
     dataframe.insert(0, "#", range(1, 1 + len(dataframe)))
 
-    # pass dataframe as well as html to the template
     return render_template(
-        "index.html", library_data=dataframe, is_sorted_by_mood=sort_mood
+        "index.html",
+        library_data=dataframe,
+        is_sorted_by_mood=sort_mood,
+        available_moods=available_moods,
+        selected_moods=selected_moods,
     )
 
 

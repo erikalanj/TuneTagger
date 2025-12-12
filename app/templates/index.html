@@ -1,15 +1,4 @@
-{% extends 'base.html' %} {% block head %}
-<title>TuneTagger</title>
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/index.css') }}"
-/>
-<link
-  href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
-  rel="stylesheet"
-/>
-{% endblock %} {% block body %}
-
+{% extends 'base.html' %} {% block body %}
 <div class="container">
   <h1 id="title">Welcome to TuneTagger!</h1>
 
@@ -208,6 +197,14 @@
         const addSongArrow = document.querySelectorAll(".section .arrow")[0];
         if (addSongContent) {
           expandElement(addSongContent, addSongArrow);
+        }
+      }
+
+      if (sessionStorage.getItem("openLibrary") === "1") {
+        const libraryContent = document.querySelectorAll(".content")[1];
+        const libraryArrow = document.querySelectorAll(".section .arrow")[1];
+        if (libraryContent) {
+          expandElement(libraryContent, libraryArrow);
         }
       }
     });
