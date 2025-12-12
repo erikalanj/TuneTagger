@@ -37,7 +37,6 @@
           >
 
           <select name="filter_moods" id="mood_select" multiple>
-            <option value="">Show All Moods</option>
             {% for mood in available_moods %}
             <option
               value="{{ mood }}"
@@ -54,7 +53,7 @@
             {% endfor %}
           </select>
 
-          <button type="submit">Apply filter</button>
+          <button type="submit" id="filter-apply">Apply filter</button>
         </form>
       </div>
       <div id="library-output" class="library-table">
