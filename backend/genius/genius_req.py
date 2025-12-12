@@ -8,6 +8,8 @@ import sys
 import os
 import json
 import traceback
+import tomllib
+from pathlib import Path
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +19,11 @@ sys.path.append(parent_dir)
 
 from nlp.mood_analyzer import analyze_song_mood
 
-client_access_token = "aa4ZOA-5Fm6597GmdwfLLgBfePglT6pEk1-U-NThxM0GGw45h_t531LB7IiPH7pD"
+secrets_path = Path(__file__).parent.parent.parent / "secrets" / "secrets.toml"
+with open(secrets_path, "rb") as f:
+    secrets = tomllib.load(f)
+
+client_access_token = secrets["GENIUS_TOKEN"]
 
 if not client_access_token:
     print(
